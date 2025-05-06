@@ -1,1 +1,91 @@
-#Create two vpc HOVpc [ 172.16.0.0/16 ] with one Aubnet AppSn [ 172.16.10.0/24 ] and another vpc BrVPC [ 172.20.0.0/16 ] with one Subnet BrSn [ 172.20.10.0/24 ] and peer both VPC.
+##############################################
+Create two vpc HOVpc [ 172.16.0.0/16 ] with one Aubnet AppSn [ 172.16.10.0/24 ] and another vpc BrVPC [ 172.20.0.0/16 ] with one Subnet BrSn [ 172.20.10.0/24 ] and peer both VPC.
+###############################################
+provider "aws" {
+  region = "us-east-1"   # change region as needed
+}
+
+# Create HOVpc
+resource "aws_vpc" "ho_vpc" {
+  cidr_block = "172.16.0.0/16"
+  tags = {
+    Name = "HOVpc"
+  }
+}
+
+# Create AppSn subnet inside HOVpc
+resource "aws_subnet" "app_sn" {
+  vpc_id            = aws_vpc.ho_vpc.id
+  cidr_block        = "172.16.10.0/24"
+  availability_zone = "us-east-1a"
+  tags = {
+    Name = "AppSn"
+  }
+}
+
+# Create BrVpc
+resource "aws_vpc" "br_vpc" {
+  cidr_block = "172.20.0.0/16"
+  tags = {
+    Name = "BrVpc"
+  }
+}
+
+# Create BrSn subnet inside BrVpc
+resource "aws_subnet" "br_sn" {
+  vpc_id            = aws_vpc.br_vpc.id
+  cidr_block        = "172.20.10.0/24"
+  availability_zone = "us-east-1b"
+  tags = {
+    Name = "BrSn"
+  }
+}
+
+# Create VPC Peering Connection
+resource "aws_vpc_peering_connection" "peer" {
+  vpc_id        = aws_vpc.ho_vpc.id
+  peer_vpc_id   = aws_vpc.br_vpc.id
+  auto_accept   = true
+
+  tags = {
+    Name = "HO-to-BR-Peering"
+  }
+}
+
+# Update Route Table for HOVpc
+resource "aws_route_table" "ho_rt" {
+  vpc_id = aws_vpc.ho_vpc.id
+
+  route {
+    cidr_block                = aws_vpc.br_vpc.cidr_block
+    vpc_peering_connection_id = aws_vpc_peering_connection.peer.id
+  }
+
+  tags = {
+    Name = "HORouteTable"
+  }
+}
+
+resource "aws_route_table_association" "ho_rta" {
+  subnet_id      = aws_subnet.app_sn.id
+  route_table_id = aws_route_table.ho_rt.id
+}
+
+# Update Route Table for BrVpc
+resource "aws_route_table" "br_rt" {
+  vpc_id = aws_vpc.br_vpc.id
+
+  route {
+    cidr_block                = aws_vpc.ho_vpc.cidr_block
+    vpc_peering_connection_id = aws_vpc_peering_connection.peer.id
+  }
+
+  tags = {
+    Name = "BRRouteTable"
+  }
+}
+
+resource "aws_route_table_association" "br_rta" {
+  subnet_id      = aws_subnet.br_sn.id
+  route_table_id = aws_route_table.br_rt.id
+}
