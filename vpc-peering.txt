@@ -1,0 +1,1 @@
+#Create two vpc HOVpc [ 172.16.0.0/16 ] with one Aubnet AppSn [ 172.16.10.0/24 ] and another vpc BrVPC [ 172.20.0.0/16 ] with one Subnet BrSn [ 172.20.10.0/24 ] and peer both VPC.
