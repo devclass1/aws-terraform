@@ -1,16 +1,3 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-}
-
-provider "aws" {
-  region = var.region
-}
-
 # Create VPC
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
@@ -94,11 +81,28 @@ resource "aws_security_group" "allow_ssh_http" {
   }
 }
 
-# Create Key Pair
-resource "aws_key_pair" "deployer" {
-  key_name   = var.key_pair_name
-  public_key = file("${var.key_pair_name}.pub")
+# # Create Key Pair
+# resource "aws_key_pair" "deployer" {
+#   key_name   = var.key_pair_name
+#   public_key = var.public_key
+# }
+
+###Create KEy
+resource "tls_private_key" "terraform-aws-class-key" {
+  algorithm = "RSA"
+  rsa_bits = "4096"
 }
+
+resource "aws_key_pair" "terraform-aem-2-pem" {
+key_name = "terraform-aem-2-pem"
+public_key = tls_private_key.terraform-aws-class-key.public_key_openssh
+
+}
+ resource "local_file" "ssh_key" {
+     filename = "${aws_key_pair.terraform-aem-2-pem.key_name}"
+     content  = tls_private_key.terraform-aws-class-key.private_key_pem
+ }
+
 
 # Create EC2 Instance
 resource "aws_instance" "main" {
@@ -106,7 +110,7 @@ resource "aws_instance" "main" {
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.main.id
   vpc_security_group_ids = [aws_security_group.allow_ssh_http.id]
-  key_name               = aws_key_pair.deployer.key_name
+  key_name               = aws_key_pair.terraform-aem-2-pem.id
 
   root_block_device {
     volume_size = var.storage_size
