@@ -7,6 +7,7 @@ variable "region" {
 variable "vpc_name" {
   description = "Name of the VPC"
   type        = string
+  default     = "Class-aem-VPC"
 }
 
 variable "vpc_cidr" {
@@ -18,6 +19,7 @@ variable "vpc_cidr" {
 variable "subnet_name" {
   description = "Name of the subnet"
   type        = string
+  default     = "Class-aem-SubNet"
 }
 
 variable "subnet_cidr" {
@@ -35,12 +37,13 @@ variable "availability_zone" {
 variable "ec2_hostname" {
   description = "Hostname for the EC2 instance"
   type        = string
+  default     = "Class-aem-EC2"
 }
 
 variable "ami_id" {
   description = "AMI ID for the EC2 instance"
   type        = string
-  default     = "ami-0c55b159cbfafe1f0" # Amazon Linux 2 (us-east-1)
+  default     = "ami-0953476d60561c955" # Amazon Linux 2 (us-east-1)
 }
 
 variable "instance_type" {
@@ -49,13 +52,17 @@ variable "instance_type" {
   default     = "t2.micro"
 }
 
-variable "key_pair_name" {
-  description = "Name of the key pair"
-  type        = string
-}
+# variable "key_pair_name" {
+#   description = "Name of the key pair"
+#   type        = string
+# }
 
 variable "storage_size" {
   description = "Size of the root volume in GB"
   type        = number
   default     = 8
 }
+# variable "public_key" {
+#   description = "Public key material"
+#   type        = string
+# }
