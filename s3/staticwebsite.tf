@@ -1,5 +1,23 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
 provider "aws" {
-  region = "us-east-1"
+  region = var.region_name
+}
+
+provider "tls" {
+  # Configuration options
+}
+
+variable "region_name" {
+  type        = string
+  default = "us-east-1"
 }
 
 variable "bucket_name" {
@@ -24,9 +42,9 @@ resource "aws_s3_bucket" "static_site" {
 resource "aws_s3_bucket_public_access_block" "public_access" {
   bucket = aws_s3_bucket.static_site.id
 
-  block_public_acls       = false
+  block_public_acls       = true
   block_public_policy     = false
-  ignore_public_acls      = false
+  ignore_public_acls      = true
   restrict_public_buckets = false
 }
 
@@ -61,5 +79,12 @@ resource "aws_s3_object" "index" {
 EOF
 
   content_type = "text/html"
-  acl          = "public-read"
+#  acl          = "public-read"
+}
+
+output "s3-web" {
+  value = aws_s3_bucket.static_site.id
+}
+output "s3-web-url" {
+  value = "${aws_s3_bucket.static_site.bucket}.s3-website-${var.region_name}.amazonaws.com"
 }
