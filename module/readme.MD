@@ -26,3 +26,15 @@ module "ec2_instance" {
 
 In the above example, the `ec2_instance` module is sourced from a local `./modules/ec2` directory and reuses the same infrastructure logic to provision EC2 instances.
 
+terraform-aws-module-lab/
+│
+├── main.tf
+├── variables.tf
+├── outputs.tf
+├── terraform.tfvars
+├── modules/
+│   └── ec2_instance/
+│       ├── main.tf
+│       ├── variables.tf
+│       └── outputs.tf
+
